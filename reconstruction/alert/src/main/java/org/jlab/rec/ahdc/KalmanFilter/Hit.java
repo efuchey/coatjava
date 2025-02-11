@@ -56,7 +56,7 @@ public class Hit implements Comparable<Hit> {
 		Vector3D n2 = new Vector3D(0, 0, 1);
 		//n2.rotateY(thopen);
 		//n2.rotateZ(thtilt);
-	Plane3D rPlane = new Plane3D(p2, n2);//OK
+		Plane3D rPlane = new Plane3D(p2, n2);//OK
 
 		switch (this.superLayer) {//OK
 			case 1:
@@ -107,38 +107,13 @@ public class Hit implements Comparable<Hit> {
 		//wireLine.show();
 		this.line3D = wireLine;
 	}
-    
-        // //hit measurement vector in cylindrical coordinates: r, phi, z
-        // public RealVector get_Vector() {
-	//     RealVector wire_meas = new ArrayRealVector(new double[]{this.r(), this.phi(), 0.0});
-	//     // 2-dim matrices
-	//     // RealVector wire_meas = new ArrayRealVector(new double[]{this.r(), this.phi()});
-	//     return wire_meas;
-	// }
-
-        // public RealVector get_Vector_z(double z) {
-	//     RealVector wire_meas = new ArrayRealVector(new double[]{this.r(), this.phi(z), z});
-	//     return wire_meas;
-	// }
 
         //hit measurement vector in 1 dimension: minimize distance - doca
-        public RealVector get_Vector_simple() {
+        public RealVector get_Vector() {
 		return new ArrayRealVector(new double[]{this.doca});
 	}
 
-        // public RealMatrix get_MeasurementNoise() {
-	//     final double costhster = Math.cos(thster);
-	//     final double sinthster = Math.cos(thster);
-	//     //dR = 0.1m dphi = pi dz = L/2
-	//     // 3-dim matrices
-	//     Array2DRowRealMatrix wire_noise = new Array2DRowRealMatrix(new double[][]{{0.01, 0.0, 0.0}, {0.0, Math.pow( (phi(-zl*0.5)+phi(zl*0.5))*0.5 , 2), 0.0}, {0.0, 0.0, zl*zl*0.25}} );//uncertainty matrix in wire coordinates
-	//     // trying 2-dim matrices
-	//     //Array2DRowRealMatrix wire_noise = new Array2DRowRealMatrix(new double[][]{{0.01, 0.0}, {0.0, Math.pow( (phi(-zl*0.5)+phi(zl*0.5))*0.5 , 2)} );//uncertainty matrix in wire coordinates
-	//     return wire_noise;
-	//     //
-	// }
-
-    	public RealMatrix get_MeasurementNoise_simple() {
+    	public RealMatrix get_MeasurementNoise() {
 	    return new Array2DRowRealMatrix(new double[][]{{0.01}});
 	}
     
@@ -151,8 +126,6 @@ public class Hit implements Comparable<Hit> {
         public double phi()    {return phi;}//at z = 0;
     
         public double phi(double z)    {
-	    // double x_0 = r*sin(phi);
-	    // double y_0 = r*cos(phi);
 	    double x_z = r*Math.sin( phi + thster * z/(zl*0.5) * (Math.pow(-1, this.superLayer-1)) );
 	    double y_z = r*Math.cos( phi + thster * z/(zl*0.5) * (Math.pow(-1, this.superLayer-1)) );
 	    return Math.atan2(x_z, y_z);
@@ -161,10 +134,6 @@ public class Hit implements Comparable<Hit> {
 	public Line3D line() {return line3D;}
 
 	public double distance(Point3D point3D) {
-	    //System.out.println("Calculating distance: ");
-	    //this.line3D.show();
-	    //point3D.show();
-	    //System.out.println(" d = " + this.line3D.distance(point3D).length());
 		return this.line3D.distance(point3D).length();
 	}
 

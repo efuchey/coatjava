@@ -63,16 +63,6 @@ public class KalmanFilter {
 				}
 			}
 
-			
-			/*
-			Writer hitsWriter = new FileWriter("hits.dat");
-			for (Point3D p : sim_hits) {
-				hitsWriter.write("" + p.x() + ", " + p.y() + ", " + p.z() + '\n');
-			}
-			hitsWriter.close();
-			 */
-
-
 			// Initialization ---------------------------------------------------------------------
 			final double      magfield          = +50;
 			final PDGParticle proton            = PDGDatabase.getParticleById(2212);
@@ -94,17 +84,13 @@ public class KalmanFilter {
 			final double pz0 = tracks.get(0).get_pz();
 			final double p_init = java.lang.Math.sqrt(px0*px0+py0*py0+pz0*pz0);
 			double[]     y   = new double[]{x0, y0, z0, px0, py0, pz0};
-			//System.out.println("y = " + x0 + ", " + y0 + ", " + z0 + ", " + px0 + ", " + py0 + ", " + pz0 + "; p = " +  p_init);
 			// EPAF: *the line below is for TEST ONLY!!!* 
 			//double[]     y   = new double[]{vxmc, vymc, vzmc, pxmc, pymc, pzmc};
-			//System.out.println("y = " + vxmc + ", " + vymc + ", " + vzmc + ", " + pxmc + ", " + pymc + ", " + pzmc + "; p = " +  java.lang.Math.sqrt(pxmc*pxmc+pymc*pymc+pzmc*pzmc));
 			// Initialization hit
-			//System.out.println("tracks = " + tracks);
 			ArrayList<org.jlab.rec.ahdc.Hit.Hit> AHDC_hits = tracks.get(0).getHits();
 			ArrayList<Hit>                       KF_hits   = new ArrayList<>();
 
 			for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits) {
-			    //System.out.println("Superlayer = " + AHDC_hit.getSuperLayerId() + ", Layer " + AHDC_hit.getLayerId() + ", Wire " + AHDC_hit.getWireId() + ", Nwires " + AHDC_hit.getNbOfWires() + ", Radius " + AHDC_hit.getRadius() + ", DOCA " + AHDC_hit.getDoca());
 				Hit hit = new Hit(AHDC_hit.getSuperLayerId(), AHDC_hit.getLayerId(), AHDC_hit.getWireId(), AHDC_hit.getNbOfWires(), AHDC_hit.getRadius(), AHDC_hit.getDoca());
 				hit.setHitIdx(AHDC_hit.getId());
 				// Do delete hit with same radius
@@ -117,17 +103,6 @@ public class KalmanFilter {
 				// if (!aleardyHaveR)
 				KF_hits.add(hit);
 			}
-			//AHDC_hits = tracks.get(0).getHits();
-			
-			/*
-			Writer hitsWiresWriter = new FileWriter("hits_wires.dat");
-			for (Hit h : KF_hits) {
-				hitsWiresWriter.write("" + h.getSuperLayer() + ", " + h.getLayer() + ", " + h.getWire() + ", " + h.getDoca() + ", " + h.getNumWires() + ", " + h.getR() + '\n');
-			}
-			hitsWiresWriter.close();
-			 */
-
-			//System.out.println("KF_hits = " + KF_hits);
 
 			final ArrayList<Indicator> forwardIndicators  = forwardIndicators(KF_hits, materialHashMap);
 			final ArrayList<Indicator> backwardIndicators = backwardIndicators(KF_hits, materialHashMap);
@@ -145,72 +120,31 @@ public class KalmanFilter {
 			RealMatrix initialErrorCovariance = MatrixUtils.createRealMatrix(new double[][]{{1.00, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 1.00, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 25.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 1.00, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 1.00, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 25.0}});
 			KFitter kFitter = new KFitter(initialStateEstimate, initialErrorCovariance, stepper, propagator);
 
-			/*
-			Stepper stepper_fisrt = new Stepper(y);
-			Writer  writer_first  = new FileWriter("track_first.dat");
-			for (Indicator indicator : forwardIndicators) {
-				stepper_fisrt.initialize(indicator);
-				propagator.propagateAndWrite(stepper_fisrt, indicator, writer_first);
-			}
-			writer_first.close();
-
-
-
-			System.out.println("--------- BackWard propagation !! ---------");
-
-			Writer writer_back = new FileWriter("track_back.dat");
-			for (Indicator indicator : backwardIndicators) {
-				stepper.initialize(indicator);
-				propagator.propagateAndWrite(stepper, indicator, writer_back);
-			}
-			writer_back.close();
-			 */
-			
 			for (int k = 0; k < Niter; k++) {
-
 				//System.out.println("--------- ForWard propagation !! ---------");
 				//Reset error covariance:
 				//kFitter.ResetErrorCovariance(initialErrorCovariance);
 				for (Indicator indicator : forwardIndicators) {
 					kFitter.predict(indicator);
-					//System.out.println("indicator R " + indicator.R + " h "  + indicator.h + "; y =  " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
 					if (indicator.haveAHit()) {
-					    if( k==0  && indicator.hit.getHitIdx()>0){
-						for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
-						    if(AHDC_hit.getId()==indicator.hit.getHitIdx()){
-							//System.out.println(" AHDC hit superlayer " + AHDC_hit.getSuperLayerId() );
-							AHDC_hit.setResidualPrefit(kFitter.residual(indicator));
-						    }
+						if( k==0  && indicator.hit.getHitIdx()>0){
+							//sign[] = kFitter.wire_sign(indicator);
+							for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
+								if(AHDC_hit.getId()==indicator.hit.getHitIdx())AHDC_hit.setResidualPrefit(kFitter.residual(indicator));
+							}
 						}
-						//System.out.println( "AHDC hit corresponding index " + indicator.hit.getHitIdx() + " pre-fit residual " + kFitter.residual(indicator) );//AHDC_hits.get( indicator.hit.getHitIdx() ).setResidualPrefit(kFitter.residual(indicator));
-					    }
-					    //System.out.println("Superlayer = " + indicator.hit.getSuperLayer() + ", Layer " + indicator.hit.getLayer() + ", Wire " + indicator.hit.getWire() + ", Nwires " + indicator.hit.getNumWires() + ", Radius " + indicator.hit.getR() + ", DOCA " + indicator.hit.getDoca());
-					    kFitter.correct(indicator);
-						//System.out.println("y = " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
+						kFitter.correct(indicator);
 					}
 				}
 
 				//System.out.println("--------- BackWard propagation !! ---------");
-
 				for (Indicator indicator : backwardIndicators) {
 					kFitter.predict(indicator);
-					//System.out.println("indicator R " + indicator.R + " h "  + indicator.h + "; y =  " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
 					if (indicator.haveAHit()) {
-					    //System.out.println("Superlayer = " + indicator.hit.getSuperLayer() + ", Layer " + indicator.hit.getLayer() + ", Wire " + indicator.hit.getWire() + ", Nwires " + indicator.hit.getNumWires() + ", Radius " + indicator.hit.getR() + ", DOCA " + indicator.hit.getDoca());
-					    kFitter.correct(indicator);
-					    //System.out.println("y = " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
+						kFitter.correct(indicator);
 					}
 				}
 			}
-
-			/*
-			Writer writer_last = new FileWriter("track_last.dat");
-			for (Indicator indicator : forwardIndicators) {
-				stepper.initialize(indicator);
-				propagator.propagateAndWrite(stepper, indicator, writer_last);
-			}
-			writer_last.close();
-			 */
 
 			RealVector x_out = kFitter.getStateEstimationVector();
 			tracks.get(0).setPositionAndMomentumForKF(x_out);
@@ -220,17 +154,12 @@ public class KalmanFilter {
 				kFitter.predict(indicator);
 				if (indicator.haveAHit()) {
 					if( indicator.hit.getHitIdx()>0){
-					    for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
-						if(AHDC_hit.getId()==indicator.hit.getHitIdx()){
-						    //System.out.println(" AHDC hit superlayer " + AHDC_hit.getSuperLayerId() );                                                                       
-						    AHDC_hit.setResidual(kFitter.residual(indicator));
+						for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
+							if(AHDC_hit.getId()==indicator.hit.getHitIdx())AHDC_hit.setResidual(kFitter.residual(indicator));
 						}
-					    }
 					}
 				}
 			}
-			
-			//System.out.println("y_final = " + x_out + " p_final = " + kFitter.getMomentum());
 		} catch (Exception e) {
 			// e.printStackTrace();
 		}
@@ -304,7 +233,7 @@ public class KalmanFilter {
 		for (int i = hitArrayList.size() - 2; i >= 0; i--) {
 			backwardIndicators.add(new Indicator(hitArrayList.get(i).r(), 0.1, hitArrayList.get(i), false, materialHashMap.get("BONuS12Gas")));
 		}
-		backwardIndicators.add(new Indicator(3.060, 1, null, false, materialHashMap.get("BONuS12Gas")));
+		backwardIndicators.add(new Indicator(3.060, 0.1, null, false, materialHashMap.get("BONuS12Gas")));
 		backwardIndicators.add(new Indicator(3.0, 0.001, null, false, materialHashMap.get("Kapton")));
 		Hit hit = new Hit_beam(0, 0, 0, 0, 0, 0, 0, 0);
 		backwardIndicators.add(new Indicator(0.0, 0.2, hit, false, materialHashMap.get("deuteriumGas")));

@@ -16,6 +16,8 @@ public class Hit implements Comparable<Hit> {
 	private boolean use = false;
 	private double  x;
 	private double  y;
+	private double  residual_prefit;
+	private double  residual;
 
 	public Hit(int _Id, int _Super_layer, int _Layer, int _Wire, double _Doca) {
 		this.id           = _Id;
@@ -24,6 +26,8 @@ public class Hit implements Comparable<Hit> {
 		this.wireId       = _Wire;
 		this.doca         = _Doca;
 		wirePosition();
+		this.residual_prefit = 0.0;
+		this.residual        = 0.0;
 	}
 
 	private void wirePosition() {
@@ -130,4 +134,20 @@ public class Hit implements Comparable<Hit> {
 	}
 
 	public double getPhi() {return phi;}
+
+	public double getResidual() {
+		return residual;
+	}
+
+	public double getResidualPrefit() {
+		return residual_prefit;
+	}
+
+	public void setResidual(double resid) {
+		this.residual = resid;
+	}
+
+	public void setResidualPrefit(double resid) {
+		this.residual_prefit = resid;
+	}
 }

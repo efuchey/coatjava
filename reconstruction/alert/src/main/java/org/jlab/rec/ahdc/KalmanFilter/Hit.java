@@ -22,10 +22,11 @@ public class Hit implements Comparable<Hit> {
 	private final double adc;
 	private final double numWires;
 	private final Line3D line3D;
+	private int    hitidx;
 
-        // Comparison with:  common-tools/clas-geometry/src/main/java/org/jlab/geom/detector/alert/AHDC/AlertDCFactory.java
-        // here, SuperLayer, Layer, Wire, start from 1
-        // in AlertDCFactory, same variables start from 1
+	// Comparison with:  common-tools/clas-geometry/src/main/java/org/jlab/geom/detector/alert/AHDC/AlertDCFactory.java
+	// here, SuperLayer, Layer, Wire, start from 1
+	// in AlertDCFactory, same variables start from 1
 	public Hit(int superLayer, int layer, int wire, int numWire, double r, double doca) {
 		this.superLayer = superLayer;
 		this.layer      = layer;
@@ -34,6 +35,7 @@ public class Hit implements Comparable<Hit> {
 		this.doca       = doca;
 		this.numWires = numWire;
 		this.adc = 0;//placeholder
+		this.hitidx = -1;
 		
 		final double DR_layer = 4.0;//OK
 		final double round    = 360.0;//OK
@@ -54,7 +56,7 @@ public class Hit implements Comparable<Hit> {
 		Vector3D n2 = new Vector3D(0, 0, 1);
 		//n2.rotateY(thopen);
 		//n2.rotateZ(thtilt);
-		Plane3D rPlane = new Plane3D(p2, n2);//OK
+	Plane3D rPlane = new Plane3D(p2, n2);//OK
 
 		switch (this.superLayer) {//OK
 			case 1:
@@ -216,5 +218,14 @@ public class Hit implements Comparable<Hit> {
 	public double getNumWires() {
 		return numWires;
 	}
+
+	public int getHitIdx() {
+		return hitidx;
+	}
+
+	public void setHitIdx(int idx) {
+		this.hitidx = idx;
+	}
+    
 }
 

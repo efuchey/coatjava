@@ -15,7 +15,6 @@ public class Track {
 	private       List<Cluster>  _Clusters = new ArrayList<>();
 	private       boolean        _Used     = false;
 	private final ArrayList<Hit> hits      = new ArrayList<>();
-	;
 
 	private double x0  = 0;
 	private double y0  = 0;

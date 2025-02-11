@@ -103,15 +103,10 @@ public class KalmanFilter {
 			ArrayList<org.jlab.rec.ahdc.Hit.Hit> AHDC_hits = tracks.get(0).getHits();
 			ArrayList<Hit>                       KF_hits   = new ArrayList<>();
 
-			int hit_global_idx[] = {0, 0, 0, 0, 0, 0, 0, 0};
-			double[] residuals = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-			double[] residuals_prefit = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-			nhits = 0;
 			for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits) {
 			    //System.out.println("Superlayer = " + AHDC_hit.getSuperLayerId() + ", Layer " + AHDC_hit.getLayerId() + ", Wire " + AHDC_hit.getWireId() + ", Nwires " + AHDC_hit.getNbOfWires() + ", Radius " + AHDC_hit.getRadius() + ", DOCA " + AHDC_hit.getDoca());
-			    Hit hit = new Hit(AHDC_hit.getSuperLayerId(), AHDC_hit.getLayerId(), AHDC_hit.getWireId(), AHDC_hit.getNbOfWires(), AHDC_hit.getRadius(), AHDC_hit.getDoca());
-			    hit.setHitIdx(AHDC_hit.getId());
-			    hit_global_idx[nhits++] = AHDC_hit.getId();
+				Hit hit = new Hit(AHDC_hit.getSuperLayerId(), AHDC_hit.getLayerId(), AHDC_hit.getWireId(), AHDC_hit.getNbOfWires(), AHDC_hit.getRadius(), AHDC_hit.getDoca());
+				hit.setHitIdx(AHDC_hit.getId());
 				// Do delete hit with same radius
 				// boolean aleardyHaveR = false;
 				// for (Hit o: KF_hits){
@@ -122,7 +117,7 @@ public class KalmanFilter {
 				// if (!aleardyHaveR)
 				KF_hits.add(hit);
 			}
-			
+			//AHDC_hits = tracks.get(0).getHits();
 			
 			/*
 			Writer hitsWiresWriter = new FileWriter("hits_wires.dat");
@@ -170,14 +165,6 @@ public class KalmanFilter {
 			}
 			writer_back.close();
 			 */
-
-			//Print out hit residuals *before* fit:
-			// for (Indicator indicator : forwardIndicators) {
-			//     kFitter.predict(indicator);
-			//     if (indicator.haveAHit()) {
-			// 	//AHDC_hits.get( indicator.hit.getHitIdx() ).setResidualPrefit(kFitter.residual(indicator));	
-			//     }
-			// }
 			
 			for (int k = 0; k < Niter; k++) {
 
@@ -188,7 +175,15 @@ public class KalmanFilter {
 					kFitter.predict(indicator);
 					//System.out.println("indicator R " + indicator.R + " h "  + indicator.h + "; y =  " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
 					if (indicator.haveAHit()) {
-					    //if(k==0 && indicator.hit.getHitIdx() )residuals[] = kFitter.residual(indicator);//AHDC_hits.get( indicator.hit.getHitIdx() ).setResidualPrefit(kFitter.residual(indicator));
+					    if(k==0 && indicator.hit.getHitIdx()>0){
+						for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
+						    if(AHDC_hit.getId()==indicator.hit.getHitIdx()){
+							//System.out.println(" AHDC hit superlayer " + AHDC_hit.getSuperLayerId() );
+							AHDC_hit.setResidualPrefit(kFitter.residual(indicator));
+						    }
+						}
+						//System.out.println( "AHDC hit corresponding index " + indicator.hit.getHitIdx() + " pre-fit residual " + kFitter.residual(indicator) );//AHDC_hits.get( indicator.hit.getHitIdx() ).setResidualPrefit(kFitter.residual(indicator));
+					    }
 					    //System.out.println("Superlayer = " + indicator.hit.getSuperLayer() + ", Layer " + indicator.hit.getLayer() + ", Wire " + indicator.hit.getWire() + ", Nwires " + indicator.hit.getNumWires() + ", Radius " + indicator.hit.getR() + ", DOCA " + indicator.hit.getDoca());
 					    kFitter.correct(indicator);
 						//System.out.println("y = " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
@@ -204,18 +199,18 @@ public class KalmanFilter {
 					    //System.out.println("Superlayer = " + indicator.hit.getSuperLayer() + ", Layer " + indicator.hit.getLayer() + ", Wire " + indicator.hit.getWire() + ", Nwires " + indicator.hit.getNumWires() + ", Radius " + indicator.hit.getR() + ", DOCA " + indicator.hit.getDoca());
 					    kFitter.correct(indicator);
 						//System.out.println("y = " + kFitter.getStateEstimationVector() + " p = " + kFitter.getMomentum());
-					    //if(k==Niter-1 && indicator.hit.getHitIdx()>=0)AHDC_hits.get( indicator.hit.getHitIdx() ).setResidual(kFitter.residual(indicator));
+					    if(k==Niter-1 && indicator.hit.getHitIdx()>=0){
+						for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
+						    if(AHDC_hit.getId()==indicator.hit.getHitIdx()){
+							//System.out.println(" AHDC hit superlayer " + AHDC_hit.getSuperLayerId() );
+							AHDC_hit.setResidual(kFitter.residual(indicator));
+						    }
+						}
+						//System.out.println( "AHDC hit corresponding index " + indicator.hit.getHitIdx() + " post-fit residual " + kFitter.residual(indicator) );//AHDC_hits.get( indicator.hit.getHitIdx() ).setResidual(kFitter.residual(indicator));
+					    }
 					}
 				}
 			}
-
-			//Print out residuals *after* fit:
-			// for (Indicator indicator : forwardIndicators) {
-			//     kFitter.predict(indicator);
-			//     if (indicator.haveAHit()) {
-			// 	//AHDC_hits.get( indicator.hit.getHitIdx() ).setResidual(kFitter.residual(indicator));
-			//     }
-			// }
 			
 			/*
 			Writer writer_last = new FileWriter("track_last.dat");
@@ -225,7 +220,6 @@ public class KalmanFilter {
 			}
 			writer_last.close();
 			 */
-
 
 			RealVector x_out = kFitter.getStateEstimationVector();
 			tracks.get(0).setPositionAndMomentumForKF(x_out);

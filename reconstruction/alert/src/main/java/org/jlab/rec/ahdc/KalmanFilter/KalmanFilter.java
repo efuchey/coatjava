@@ -34,6 +34,7 @@ public class KalmanFilter {
 	public KalmanFilter(ArrayList<Track> tracks, DataEvent event) {propagation(tracks, event);}
 
 	private final int Niter = 5;
+	private final boolean IsVtxDefined = false;
 
 	private void propagation(ArrayList<Track> tracks, DataEvent event) {
 
@@ -104,8 +105,10 @@ public class KalmanFilter {
 				KF_hits.add(hit);
 			}
 
+			double zbeam = 0;
+			if(IsVtxDefined)zbeam = vxmc;//test
 			final ArrayList<Indicator> forwardIndicators  = forwardIndicators(KF_hits, materialHashMap);
-			final ArrayList<Indicator> backwardIndicators = backwardIndicators(KF_hits, materialHashMap, 0);
+			final ArrayList<Indicator> backwardIndicators = backwardIndicators(KF_hits, materialHashMap, zbeam);
 			
 			// Start propagation
 			Stepper     stepper    = new Stepper(y);
@@ -119,7 +122,8 @@ public class KalmanFilter {
 			//first 3 lines in cm^2; last 3 lines in MeV^2
 			RealMatrix initialErrorCovariance = MatrixUtils.createRealMatrix(new double[][]{{1.00, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 1.00, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 25.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 1.00, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 1.00, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 25.0}});
 			KFitter kFitter = new KFitter(initialStateEstimate, initialErrorCovariance, stepper, propagator);
-
+			kFitter.setVertexDefined(IsVtxDefined);
+		 
 			for (int k = 0; k < Niter; k++) {
 				//System.out.println("--------- ForWard propagation !! ---------");
 				//Reset error covariance:

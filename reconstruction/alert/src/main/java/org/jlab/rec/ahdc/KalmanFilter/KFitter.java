@@ -17,7 +17,7 @@ public class KFitter {
         // masses/energies in MeV
 	private final double     electron_mass_c2 = PhysicsConstants.massElectron() * 1000;
 	private final double     proton_mass_c2   = PhysicsConstants.massProton() * 1000;
-
+	private boolean isvertexdefined = false;
 
 	public KFitter(final RealVector initialStateEstimate, final RealMatrix initialErrorCovariance, final Stepper stepper, final Propagator propagator) {
 		this.stateEstimation = initialStateEstimate;
@@ -78,12 +78,14 @@ public class KFitter {
 		RealMatrix measurementMatrix;
 		RealVector h;
 		if (indicator.R == 0.0 && !indicator.direction) {
+		    double z_beam_res_sq = 1.e10;//in mm
+			if(isvertexdefined)z_beam_res_sq = 2.25;//assuming 1.5 mm resolution
 			measurementNoise =
 					new Array2DRowRealMatrix(
 							new double[][]{
 									{0.09, 0.0000, 0.0000},
 									{0.00, 1e10, 0.0000},
-								        {0.00, 0.0000, 1.e10}
+								        {0.00, 0.0000, z_beam_res_sq}
 							});//3x3
 			measurementMatrix  = H_beam(stateEstimation);//6x3
 			h = h_beam(stateEstimation);//3x1
@@ -276,5 +278,7 @@ public class KFitter {
 	public double getMomentum() {
 		return Math.sqrt(stateEstimation.getEntry(3) * stateEstimation.getEntry(3) + stateEstimation.getEntry(4) * stateEstimation.getEntry(4) + stateEstimation.getEntry(5) * stateEstimation.getEntry(5));
 	}
+
+	public void setVertexDefined(boolean isvtxdef) {isvertexdefined = isvtxdef;}
 
 }

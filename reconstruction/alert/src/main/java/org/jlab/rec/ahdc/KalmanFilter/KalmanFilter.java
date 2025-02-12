@@ -128,7 +128,7 @@ public class KalmanFilter {
 					kFitter.predict(indicator);
 					if (indicator.haveAHit()) {
 						if( k==0  && indicator.hit.getHitIdx()>0){
-							//sign[] = kFitter.wire_sign(indicator);
+						    indicator.hit.setSign( kFitter.wire_sign(indicator) );
 							for (org.jlab.rec.ahdc.Hit.Hit AHDC_hit : AHDC_hits){
 								if(AHDC_hit.getId()==indicator.hit.getHitIdx())AHDC_hit.setResidualPrefit(kFitter.residual(indicator));
 							}

@@ -81,15 +81,14 @@ public class KFitter {
 			measurementNoise =
 					new Array2DRowRealMatrix(
 							new double[][]{
-									{9.00, 0.0000, 0.0000},
+									{0.09, 0.0000, 0.0000},
 									{0.00, 1e10, 0.0000},
-								        {0.00, 0.0000, 1e10}
+								        {0.00, 0.0000, 1.e10}
 							});//3x3
 			measurementMatrix  = H_beam(stateEstimation);//6x3
 			h = h_beam(stateEstimation);//3x1
 			z = indicator.hit.get_Vector_beam();//0!
 		} else {
-		    //    double wire_sg = wire_sign(indicator); 
 		        measurementNoise = indicator.hit.get_MeasurementNoise();//1x1
 		        measurementMatrix = H(stateEstimation, indicator);//6x1
 		        h = h(stateEstimation, indicator);//1x1
@@ -126,10 +125,14 @@ public class KFitter {
 	}
 
 	//function for left-right disambiguation
-	public double wire_sign(Indicator indicator) {//let's decide: positive when  (phi state - phi wire) > 0
+	public int wire_sign(Indicator indicator) {//let's decide: positive when  (phi state - phi wire) > 0
 	        double phi_state = Math.atan2(stateEstimation.getEntry(1), stateEstimation.getEntry(0));
 		double phi_wire = indicator.hit.phi(stateEstimation.getEntry(2));
-		return (phi_state-phi_wire)/Math.abs(phi_state-phi_wire) ;
+		if( (phi_state-phi_wire)/Math.abs(phi_state-phi_wire)>0 ){
+			return +1;
+		}else{
+			return -1;
+		}
 	}
 
         public void ResetErrorCovariance(final RealMatrix initialErrorCovariance){
@@ -176,7 +179,8 @@ public class KFitter {
 	//measurement matrix in 1 dimension: minimize distance - doca
         private RealVector h(RealVector x, Indicator indicator) {
 		double d = indicator.hit.distance(new Point3D(x.getEntry(0), x.getEntry(1), x.getEntry(2)));
-		return MatrixUtils.createRealVector(new double[]{d});//would need to have this 3x3
+		//	double d = indicator.hit.distance(new Point3D(x.getEntry(0), x.getEntry(1), x.getEntry(2)), indicator.hit.getSign());
+		return MatrixUtils.createRealVector(new double[]{d});
 	}
 
 	//measurement matrix in 1 dimension: minimize distance - doca

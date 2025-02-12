@@ -233,7 +233,7 @@ public class KalmanFilter {
 		for (int i = hitArrayList.size() - 2; i >= 0; i--) {
 			backwardIndicators.add(new Indicator(hitArrayList.get(i).r(), 0.1, hitArrayList.get(i), false, materialHashMap.get("BONuS12Gas")));
 		}
-		backwardIndicators.add(new Indicator(3.060, 0.1, null, false, materialHashMap.get("BONuS12Gas")));
+		backwardIndicators.add(new Indicator(3.060, 1, null, false, materialHashMap.get("BONuS12Gas")));
 		backwardIndicators.add(new Indicator(3.0, 0.001, null, false, materialHashMap.get("Kapton")));
 		Hit hit = new Hit_beam(0, 0, 0, 0, 0, 0, 0, 0);
 		backwardIndicators.add(new Indicator(0.0, 0.2, hit, false, materialHashMap.get("deuteriumGas")));

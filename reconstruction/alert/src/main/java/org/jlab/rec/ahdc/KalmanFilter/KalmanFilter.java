@@ -33,7 +33,7 @@ public class KalmanFilter {
 
 	public KalmanFilter(ArrayList<Track> tracks, DataEvent event) {propagation(tracks, event);}
 
-	private final int Niter = 5;
+	private final int Niter = 10;
 	private final boolean IsVtxDefined = false;
 
 	private void propagation(ArrayList<Track> tracks, DataEvent event) {

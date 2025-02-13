@@ -79,7 +79,7 @@ public class KFitter {
 		RealVector h;
 		if (indicator.R == 0.0 && !indicator.direction) {
 		    double z_beam_res_sq = 1.e10;//in mm
-			if(isvertexdefined)z_beam_res_sq = 2.25;//assuming 1.5 mm resolution
+			if(isvertexdefined)z_beam_res_sq = 100.0;//assuming 10. mm resolution
 			measurementNoise =
 					new Array2DRowRealMatrix(
 							new double[][]{
@@ -155,7 +155,7 @@ public class KFitter {
 	}
 
 	double[] subfunctionF(Indicator indicator, Stepper stepper1, int i) throws Exception {
-		double  h             = 1e-5;//1e-8;// in mm
+		double  h             = 1e-8;// in mm
 		Stepper stepper_plus  = new Stepper(stepper1.y);
 		Stepper stepper_minus = new Stepper(stepper1.y);
 
@@ -201,7 +201,7 @@ public class KFitter {
 	}
 
 	double subfunctionH(RealVector x, Indicator indicator, int i) {
-		double     h       = 1e-5;//1e-8;// in mm
+		double     h       = 1e-8;// in mm
 		RealVector x_plus  = x.copy();
 		RealVector x_minus = x.copy();
 
